@@ -1,5 +1,6 @@
 import { context, getOctokit } from '@actions/github';
 import { getActionInputs } from './util/helpers';
+import { FILE_EXTENSIONS } from './util/const';
 import { runTest } from './tasks/runTests';
 
 async function main() {
@@ -23,7 +24,9 @@ async function getChangedFiles() {
   });
 
   const { files } = data;
-  return files?.map(file => file.filename);
+  return files
+    ?.map(file => file.filename)
+    .filter(file => FILE_EXTENSIONS.includes(file.split('.')?.pop() || ''));
 }
 
 main();
