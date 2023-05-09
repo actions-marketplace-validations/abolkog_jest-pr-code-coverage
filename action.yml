@@ -1,0 +1,17 @@
+name: 'PR Code Coverage'
+description: 'Run test and report coverage on a pull request'
+author: 'Khalid Elshafie'
+
+inputs:
+  github-token:
+    description: 'Github access token'
+    required: true
+    default: ${{ github.token }}
+  test-cmd:
+    description: 'Test command to run'
+    required: false
+    default: 'npx jest'
+
+runs:
+  using: node16
+  main: dist/index.js
