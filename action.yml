@@ -7,10 +7,6 @@ inputs:
     description: 'Github access token'
     required: true
     default: ${{ github.token }}
-  test-cmd:
-    description: 'Test command to run'
-    required: false
-    default: 'npx jest'
 
 runs:
   using: node16

@@ -6,7 +6,6 @@ describe('helpers', () => {
       const inputs = getActionInputs();
       expect(inputs).toMatchObject({
         token: expect.any(String),
-        testCmd: expect.any(String),
       });
     });
   });
