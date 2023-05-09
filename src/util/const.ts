@@ -1,4 +1,5 @@
 export const INPUTS = {
   TOKEN: 'github-token',
-  TEST_CMD: 'test-cmd',
 };
+
+export const FILE_EXTENSIONS = ['js', 'ts', 'jsx', 'tsx'];
