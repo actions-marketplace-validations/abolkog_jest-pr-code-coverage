@@ -88,4 +88,4 @@ const genDetails = (report: CoverageReport, cwd: string) => {
  * @returns
  */
 const normaliseFileName = (fileName: string, path: string) =>
-  fileName.replace(path, '');
+  fileName.replace(`${path}/`, '');
