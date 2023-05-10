@@ -6,7 +6,8 @@ import { runTest } from './tasks/runTests';
 async function main() {
   const filesToTest = await getChangedFiles();
   if (!filesToTest?.length) return;
-  runTest(filesToTest);
+
+  await runTest(filesToTest);
 }
 
 async function getChangedFiles() {
