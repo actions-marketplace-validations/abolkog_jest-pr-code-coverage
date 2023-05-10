@@ -26,10 +26,10 @@ describe('Report Generator', () => {
 
   it('generate details table', () => {
     expect(report.details).toMatchInlineSnapshot(`
-"| File                 | Lines  | Statements | Branches | Functions |
-| -------------------- | ------ | ---------- | -------- | --------- |
-| /src/index.ts        | 0%     | 0%         | 0%       | 0%        |
-| /src/util/helpers.ts | 83.33% | 87.5%      | 100%     | 50%       |"
+"| File                | Lines  | Statements | Branches | Functions |
+| ------------------- | ------ | ---------- | -------- | --------- |
+| src/index.ts        | 0%     | 0%         | 0%       | 0%        |
+| src/util/helpers.ts | 83.33% | 87.5%      | 100%     | 50%       |"
 `);
   });
 });
