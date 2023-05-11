@@ -1,5 +1,5 @@
 import { getInput } from '@actions/core';
-import { INPUTS } from './const';
+import { ANSI_REGX, INPUTS } from './const';
 
 export const getActionInputs = (): ActionInputs => {
   return {
@@ -7,5 +7,8 @@ export const getActionInputs = (): ActionInputs => {
   };
 };
 
-export const capitaliseFirstLetter = (word: string) =>
-  `${word.charAt(0).toUpperCase()}${word.slice(1).toLowerCase()}`;
+export const capitaliseFirstLetter = (word: string) => `${word.charAt(0).toUpperCase()}${word.slice(1).toLowerCase()}`;
+
+export const cleanFileName = (fileName: string, path: string) => fileName.replaceAll(`${path}/`, '');
+
+export const cleanAnsiText = (text: string) => text.replace(ANSI_REGX, '');
