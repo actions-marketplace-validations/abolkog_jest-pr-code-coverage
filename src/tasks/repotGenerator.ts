@@ -1,5 +1,5 @@
 import markdownTable from 'markdown-table';
-import { capitaliseFirstLetter } from '../util/helpers';
+import { capitaliseFirstLetter, cleanFileName } from '../util/helpers';
 
 /**
  * Generate report
@@ -7,7 +7,7 @@ import { capitaliseFirstLetter } from '../util/helpers';
  * @param cwd current working directory. Used to format file name
  * @returns report
  */
-export const generateReport = (report: CoverageReport, cwd: string): Report => {
+export const generateReport = (report: CoverageReport, result: JestResult, cwd: string): Report => {
   const { total } = report;
   delete total.branchesTrue;
 
@@ -16,6 +16,9 @@ export const generateReport = (report: CoverageReport, cwd: string): Report => {
   const details = genDetails(report, cwd);
 
   return {
+    failedTests: result.numFailedTests,
+    totalTests: result.numTotalTests,
+    success: result.success,
     total: totalCoverage,
     summary,
     details,
@@ -52,10 +55,7 @@ const genSummary = (report: CoverageReport) => {
     `${value.covered}/${value.total}`,
   ]);
 
-  return markdownTable([
-    ['Category', 'Percentage', 'Covered/Total'],
-    ...summary,
-  ]);
+  return markdownTable([['Category', 'Percentage', 'Covered/Total'], ...summary]);
 };
 
 /**
@@ -68,24 +68,12 @@ const genDetails = (report: CoverageReport, cwd: string) => {
   const details = Object.entries(report)
     .filter(([key]) => key !== 'total')
     .map(([fileName, value]) => [
-      normaliseFileName(fileName, cwd),
+      cleanFileName(fileName, cwd),
       `${value.lines.pct}%`,
       `${value.statements.pct}%`,
       `${value.branches.pct}%`,
       `${value.functions.pct}%`,
     ]);
 
-  return markdownTable([
-    ['File', 'Lines', 'Statements', 'Branches', 'Functions'],
-    ...details,
-  ]);
+  return markdownTable([['File', 'Lines', 'Statements', 'Branches', 'Functions'], ...details]);
 };
-
-/**
- * helper to return file name without the full path
- * @param fileName file name
- * @param path path
- * @returns
- */
-const normaliseFileName = (fileName: string, path: string) =>
-  fileName.replace(`${path}/`, '');

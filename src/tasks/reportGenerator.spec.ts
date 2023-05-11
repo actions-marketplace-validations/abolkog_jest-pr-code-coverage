@@ -1,4 +1,4 @@
-import { mockSummary } from './mock';
+import { mockResult, mockSummary } from './mock';
 import { generateReport } from './repotGenerator';
 
 describe('Report Generator', () => {
@@ -6,7 +6,7 @@ describe('Report Generator', () => {
   let report: Report;
 
   beforeAll(() => {
-    report = generateReport(mockSummary, cwd);
+    report = generateReport(mockSummary, mockResult, cwd);
   });
 
   it('calculate total coverage percentage', () => {

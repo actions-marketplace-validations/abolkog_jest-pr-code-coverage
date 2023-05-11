@@ -19,3 +19,56 @@ export const mockSummary = {
     branches: { total: 0, covered: 0, skipped: 0, pct: 100 },
   },
 };
+
+export const mockResult = {
+  numFailedTests: 1,
+  numTotalTests: 6,
+  success: false,
+  testResults: [
+    {
+      assertionResults: [
+        {
+          ancestorTitles: ['helpers', 'getActionInputs'],
+          failureMessages: [],
+          status: 'passed' as Status,
+          title: 'return inputs value',
+        },
+      ],
+      name: '/Users/khalid/code/open-source/pr-code-coverage/src/util/helpers.spec.ts',
+      status: 'passed' as Status,
+    },
+    {
+      assertionResults: [
+        {
+          ancestorTitles: ['Report Generator'],
+          failureMessages: [],
+          status: 'passed' as Status,
+          title: 'calculate total coverage percentage',
+        },
+      ],
+      name: '/Users/khalid/code/open-source/pr-code-coverage/src/tasks/reportGenerator.spec.ts',
+      status: 'passed' as Status,
+    },
+    {
+      assertionResults: [
+        {
+          ancestorTitles: ['comment task', 'given a new comment'],
+          failureMessages: [
+            'Error: \u001b[2mexpect(\u001b[22m\u001b[31mjest.fn()\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBeCalled\u001b[2m()\u001b[22m\n\nExpected number of calls: \u001b[32m0\u001b[39m\nReceived number of calls: \u001b[31m1\u001b[39m\n\n1: called with 0 arguments\n    at Object.<anonymous> (/Users/khalid/code/open-source/pr-code-coverage/src/tasks/comment.spec.ts:46:33)\n    at processTicksAndRejections (node:internal/process/task_queues:96:5)',
+          ],
+          status: 'failed' as Status,
+          title: 'create new comment',
+        },
+        {
+          ancestorTitles: ['comment task', 'given an existing comment'],
+          failureMessages: [],
+          status: 'passed' as Status,
+          title: 'update the comment',
+        },
+      ],
+      name: '/Users/khalid/code/open-source/pr-code-coverage/src/tasks/comment.spec.ts',
+      status: 'failed' as Status,
+    },
+  ],
+  wasInterrupted: false,
+};

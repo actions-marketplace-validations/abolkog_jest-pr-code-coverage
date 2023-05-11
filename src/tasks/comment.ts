@@ -22,9 +22,7 @@ export const commentReport = async (report: Report) => {
     owner: owner,
   });
 
-  const existingComment = comments.data.find(c =>
-    c.body?.includes('<!-- @abolkog/pr-code-coverage-action -->')
-  );
+  const existingComment = comments.data.find(c => c.body?.includes('<!-- @abolkog/pr-code-coverage-action -->'));
 
   if (existingComment) {
     await octokit.rest.issues.updateComment({
@@ -49,5 +47,23 @@ const getComment = (report: Report) => {
     .replace(commentVariable.title, 'PR Coverage Report')
     .replace(commentVariable.total, `${report.total}%`)
     .replace(commentVariable.summary, report.summary)
-    .replace(commentVariable.details, report.details);
+    .replace(commentVariable.details, report.details)
+    .replace(commentVariable.failed, formatErrors(report));
+};
+
+const wrapCode = (code: string) => '```\n' + code + '\n```';
+
+const formatErrors = (report: Report) => {
+  const { errors = [] } = report;
+  if (!errors || errors.length === 0) return '';
+  const template = readFileSync('src/errors.md').toString();
+
+  const erroMessages = errors.reduce(
+    (prev, cur) => `${prev}\n\n### ${cur.fileName}\n${wrapCode(cur.test)}\n${wrapCode(cur.message)}`,
+    '',
+  );
+
+  return template
+    .replace(commentVariable.total, `${report.failedTests}/${report.totalTests}`)
+    .replace(commentVariable.details, erroMessages);
 };

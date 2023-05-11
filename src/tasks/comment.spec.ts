@@ -1,4 +1,4 @@
-import { mockSummary } from './mock';
+import { mockResult, mockSummary } from './mock';
 import { generateReport } from './repotGenerator';
 import * as helpers from '../util/helpers';
 import { commentReport } from './comment';
@@ -31,7 +31,7 @@ jest.mock('@actions/github', () => ({
 
 describe('comment task', () => {
   const cwd = '/code/pr-code-coverage';
-  const report = generateReport(mockSummary, cwd);
+  const report = generateReport(mockSummary, mockResult, cwd);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -60,7 +60,7 @@ describe('comment task', () => {
             body: 'pr coverage <!-- @abolkog/pr-code-coverage-action -->',
           },
         ],
-      })
+      }),
     );
     it('update the comment', async () => {
       await commentReport(report);
