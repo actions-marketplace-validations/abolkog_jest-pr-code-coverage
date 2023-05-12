@@ -1,11 +1,11 @@
-name: 'PR Code Coverage'
-description: 'Run test and report coverage on a pull request'
+name: 'Jest PR Code Coverage '
+description: 'Run test and report coverage on a pull request using Jest'
 author: 'Khalid Elshafie'
 
 inputs:
   github-token:
     description: 'Github access token'
-    required: true
+    required: false
     default: ${{ github.token }}
 
 runs:

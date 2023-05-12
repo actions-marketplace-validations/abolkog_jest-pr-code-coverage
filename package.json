@@ -1,5 +1,5 @@
 {
-  "name": "pr-code-coverage",
+  "name": "jest-pr-code-coverage",
   "version": "0.0.0",
   "description": "Pull request code coverage action",
   "main": "dist/index.js",
@@ -9,11 +9,12 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "prepare": "husky install",
     "pre-commit": "lint-staged",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "semantic-release": "semantic-release"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/abolkog/pr-code-coverage.git"
+    "url": "git+https://github.com/abolkog/jest-pr-code-coverage.git"
   },
   "keywords": [
     "github",
@@ -25,10 +26,11 @@
   "author": "Khalid Elshafie",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/abolkog/pr-code-coverage/issues"
+    "url": "https://github.com/abolkog/jest-pr-code-coverage/issues"
   },
-  "homepage": "https://github.com/abolkog/pr-code-coverage#readme",
+  "homepage": "https://github.com/abolkog/jest-pr-code-coverage#readme",
   "devDependencies": {
+    "@semantic-release/git": "^10.0.1",
     "@types/jest": "^29.5.1",
     "@types/markdown-table": "^2.0.0",
     "@types/node": "^20.1.0",
@@ -39,6 +41,7 @@
     "jest": "^29.5.0",
     "lint-staged": "^13.2.2",
     "prettier": "^2.8.8",
+    "semantic-release": "^21.0.2",
     "ts-jest": "^29.1.0",
     "typescript": "^5.0.4"
   },
