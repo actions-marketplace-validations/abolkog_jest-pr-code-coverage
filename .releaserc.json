@@ -12,7 +12,7 @@
           "package-lock.json",
           "dist/index.js",
           "dist/index.js.map",
-          "sourcemap-register.js",
+          "dist/sourcemap-register.js",
           "dist/licenses.txt"
         ],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
