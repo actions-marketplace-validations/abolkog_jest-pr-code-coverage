@@ -15,8 +15,9 @@ jobs:
         with:
           node-version-file: '.nvmrc'
       - run: npm ci
-      - run: npm run build --if-present
       - run: npm test --if-present
+      - run: npm run build
+      - run: npm run package
       - run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
