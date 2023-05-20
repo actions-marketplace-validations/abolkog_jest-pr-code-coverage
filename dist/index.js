@@ -45,24 +45,41 @@ const commentReport = async (report) => {
 };
 exports.commentReport = commentReport;
 const getComment = (report) => {
-    const template = (0, fs_1.readFileSync)('src/comment_template.md').toString();
+    const template = (0, fs_1.readFileSync)('src/templates/comment.md').toString();
     return template
         .replace(const_1.commentVariable.title, 'PR Coverage Report')
-        .replace(const_1.commentVariable.total, `${report.total}%`)
+        .replace(const_1.commentVariable.total, `${formatTotal(report.total)}`)
         .replace(const_1.commentVariable.summary, report.summary)
-        .replace(const_1.commentVariable.details, report.details)
+        .replace(const_1.commentVariable.coverage, formatCoverage(report))
         .replace(const_1.commentVariable.failed, formatErrors(report));
 };
 const wrapCode = (code) => '```\n' + code + '\n```';
+const formatCoverage = (report) => {
+    if (!report.details)
+        return '';
+    const template = (0, fs_1.readFileSync)('src/templates/_coverage.md').toString();
+    return template.replace(const_1.commentVariable.details, report.details);
+};
 const formatErrors = (report) => {
     const { errors = [] } = report;
     if (!errors || errors.length === 0)
         return '';
-    const template = (0, fs_1.readFileSync)('src/errors.md').toString();
+    const template = (0, fs_1.readFileSync)('src/templates/_errors.md').toString();
     const erroMessages = errors.reduce((prev, cur) => `${prev}\n\n### ${cur.fileName}\n${wrapCode(cur.test)}\n${wrapCode(cur.message)}`, '');
     return template
         .replace(const_1.commentVariable.total, `${report.failedTests}/${report.totalTests}`)
         .replace(const_1.commentVariable.details, erroMessages);
+};
+const formatTotal = (total) => {
+    const icon = coverageToIcon(total);
+    return `${total.toFixed(2)}% ${icon}`;
+};
+const coverageToIcon = (total) => {
+    if (total > 80)
+        return ':green_circle:';
+    if (total > 50)
+        return ':orange_circle:';
+    return ':red_circle:';
 };
 
 
@@ -148,7 +165,7 @@ const getOverallPercentage = (report) => {
     const sum = Object.values(total)
         .map(val => val.pct)
         .reduce((sum, nxt) => sum + nxt, 0);
-    return (sum / 4).toFixed(2);
+    return sum / 4;
 };
 /**
  * Generate summary table
@@ -227,6 +244,7 @@ exports.INPUTS = {
 exports.commentVariable = {
     title: '{{title}}',
     total: '{{total}}',
+    coverage: '{{coverage}}',
     summary: '{{summary}}',
     details: '{{details}}',
     failed: '{{failed}}',
@@ -11655,17 +11673,15 @@ const comment_1 = __nccwpck_require__(2811);
 const errorCollector_1 = __nccwpck_require__(4842);
 const summaryFile = 'coverage/coverage-summary.json';
 const reportFile = 'report.json';
-async function main() {
+const main = async () => {
     const cwd = process.cwd();
     const filesToTest = await getChangedFiles();
     if (!(filesToTest === null || filesToTest === void 0 ? void 0 : filesToTest.length))
         return;
     await (0, runTests_1.runTest)(filesToTest);
-    if (!(0, fs_1.existsSync)(summaryFile)) {
-        (0, core_1.error)(`Unable to find summary file ${summaryFile}`);
-    }
-    if (!(0, fs_1.existsSync)(reportFile)) {
-        (0, core_1.error)(`Unable to find report file ${reportFile}`);
+    if (!(0, fs_1.existsSync)(summaryFile) || !(0, fs_1.existsSync)(reportFile)) {
+        reportNoResult();
+        return;
     }
     const result = JSON.parse((0, fs_1.readFileSync)(reportFile).toString());
     const data = JSON.parse((0, fs_1.readFileSync)(summaryFile).toString());
@@ -11675,8 +11691,19 @@ async function main() {
     if (!report.success) {
         (0, core_1.setFailed)('Error in some of the tests');
     }
-}
-async function getChangedFiles() {
+};
+const reportNoResult = async () => {
+    const report = {
+        success: true,
+        total: 0,
+        totalTests: 0,
+        failedTests: 0,
+        summary: 'No tests found!',
+        details: '',
+    };
+    await (0, comment_1.commentReport)(report);
+};
+const getChangedFiles = async () => {
     const inputs = (0, helpers_1.getActionInputs)();
     const { payload, repo } = github_1.context;
     if (!inputs.token || !payload.pull_request)
@@ -11691,7 +11718,7 @@ async function getChangedFiles() {
     });
     const { files } = data;
     return files === null || files === void 0 ? void 0 : files.map(file => file.filename).filter(file => { var _a; return const_1.FILE_EXTENSIONS.includes(((_a = file.split('.')) === null || _a === void 0 ? void 0 : _a.pop()) || ''); });
-}
+};
 main();
 
 })();
