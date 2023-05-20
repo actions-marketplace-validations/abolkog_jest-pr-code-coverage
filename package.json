@@ -1,6 +1,6 @@
 {
   "name": "jest-pr-code-coverage",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Pull request code coverage action",
   "main": "dist/index.js",
   "scripts": {
