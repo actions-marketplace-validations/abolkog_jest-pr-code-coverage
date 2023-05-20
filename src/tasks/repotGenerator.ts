@@ -38,7 +38,7 @@ const getOverallPercentage = (report: CoverageReport) => {
     .map(val => val.pct)
     .reduce((sum, nxt) => sum + nxt, 0);
 
-  return (sum / 4).toFixed(2);
+  return sum / 4;
 };
 
 /**

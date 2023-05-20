@@ -28,7 +28,7 @@ interface ReportError {
 }
 
 interface Report {
-  total: string;
+  total: number;
   summary: string;
   details: string;
   totalTests: number;

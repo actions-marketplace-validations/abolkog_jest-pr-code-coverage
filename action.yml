@@ -1,6 +1,9 @@
 name: 'Jest PR Code Coverage '
 description: 'Run test and report coverage on a pull request using Jest'
 author: 'Khalid Elshafie'
+branding:
+  color: purple
+  icon: activity
 
 inputs:
   github-token:

@@ -1,5 +1,5 @@
 import { context, getOctokit } from '@actions/github';
-import { error, setFailed } from '@actions/core';
+import { setFailed } from '@actions/core';
 import { existsSync, readFileSync } from 'fs';
 
 import { runTest } from './tasks/runTests';
@@ -13,18 +13,16 @@ import { checkErrors } from './tasks/errorCollector';
 const summaryFile = 'coverage/coverage-summary.json';
 const reportFile = 'report.json';
 
-async function main() {
+const main = async () => {
   const cwd = process.cwd();
   const filesToTest = await getChangedFiles();
   if (!filesToTest?.length) return;
 
   await runTest(filesToTest);
 
-  if (!existsSync(summaryFile)) {
-    error(`Unable to find summary file ${summaryFile}`);
-  }
-  if (!existsSync(reportFile)) {
-    error(`Unable to find report file ${reportFile}`);
+  if (!existsSync(summaryFile) || !existsSync(reportFile)) {
+    reportNoResult();
+    return;
   }
 
   const result = JSON.parse(readFileSync(reportFile).toString());
@@ -39,9 +37,21 @@ async function main() {
   if (!report.success) {
     setFailed('Error in some of the tests');
   }
-}
+};
 
-async function getChangedFiles() {
+const reportNoResult = async () => {
+  const report: Report = {
+    success: true,
+    total: 0,
+    totalTests: 0,
+    failedTests: 0,
+    summary: 'No tests found!',
+    details: '',
+  };
+  await commentReport(report);
+};
+
+const getChangedFiles = async () => {
   const inputs = getActionInputs();
   const { payload, repo } = context;
   if (!inputs.token || !payload.pull_request) return;
@@ -57,6 +67,6 @@ async function getChangedFiles() {
 
   const { files } = data;
   return files?.map(file => file.filename).filter(file => FILE_EXTENSIONS.includes(file.split('.')?.pop() || ''));
-}
+};
 
 main();

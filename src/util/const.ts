@@ -5,6 +5,7 @@ export const INPUTS = {
 export const commentVariable = {
   title: '{{title}}',
   total: '{{total}}',
+  coverage: '{{coverage}}',
   summary: '{{summary}}',
   details: '{{details}}',
   failed: '{{failed}}',
