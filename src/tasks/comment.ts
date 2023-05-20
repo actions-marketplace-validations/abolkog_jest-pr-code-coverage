@@ -45,7 +45,7 @@ const getComment = (report: Report) => {
   const template = readFileSync('src/templates/comment.md').toString();
   return template
     .replace(commentVariable.title, 'PR Coverage Report')
-    .replace(commentVariable.total, `${report.total}%`)
+    .replace(commentVariable.total, `${formatTotal(report.total)}`)
     .replace(commentVariable.summary, report.summary)
     .replace(commentVariable.coverage, formatCoverage(report))
     .replace(commentVariable.failed, formatErrors(report));
@@ -72,4 +72,15 @@ const formatErrors = (report: Report) => {
   return template
     .replace(commentVariable.total, `${report.failedTests}/${report.totalTests}`)
     .replace(commentVariable.details, erroMessages);
+};
+
+const formatTotal = (total: number) => {
+  const icon = coverageToIcon(total);
+  return `${total.toFixed(2)}% ${icon}`;
+};
+
+const coverageToIcon = (total: number) => {
+  if (total > 80) return ':green_circle:';
+  if (total > 50) return ':orange_circle:';
+  return ':red_circle:';
 };

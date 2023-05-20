@@ -42,7 +42,7 @@ const main = async () => {
 const reportNoResult = async () => {
   const report: Report = {
     success: true,
-    total: '0%',
+    total: 0,
     totalTests: 0,
     failedTests: 0,
     summary: 'No tests found!',

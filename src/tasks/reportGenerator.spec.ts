@@ -10,7 +10,7 @@ describe('Report Generator', () => {
   });
 
   it('calculate total coverage percentage', () => {
-    expect(report.total).toEqual('16.08');
+    expect(report.total).toEqual(16.0775);
   });
 
   it('generate summary table', () => {
