@@ -210,12 +210,15 @@ const genDetails = (report, cwd) => {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.runTest = void 0;
+const core_1 = __nccwpck_require__(2186);
 const exec_1 = __nccwpck_require__(1514);
-const runTest = async (files) => {
+const runTest = async (testScrip, files) => {
     const filesStrings = files.join(' ');
+    const testCMD = testScrip || 'npx jest';
+    const extraDash = testCMD === 'npx jest' ? '' : '--';
     const testCommand = [
-        'npx',
-        'jest',
+        testCMD,
+        extraDash,
         `--findRelatedTests ${filesStrings}`,
         '--ci',
         '--json',
@@ -223,7 +226,7 @@ const runTest = async (files) => {
         '--coverageReporters="json-summary"',
         '--outputFile="report.json"',
     ].join(' ');
-    console.log(`Running test: ${testCommand}`);
+    (0, core_1.info)(`Running test: ${testCommand}`);
     await (0, exec_1.exec)(testCommand, [], { cwd: process.cwd(), failOnStdErr: false, ignoreReturnCode: true });
 };
 exports.runTest = runTest;
@@ -240,6 +243,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ANSI_REGX = exports.FILE_EXTENSIONS = exports.commentVariable = exports.INPUTS = void 0;
 exports.INPUTS = {
     TOKEN: 'github-token',
+    TEST_SCRIPT: 'test-script',
 };
 exports.commentVariable = {
     title: '{{title}}',
@@ -267,6 +271,7 @@ const const_1 = __nccwpck_require__(7422);
 const getActionInputs = () => {
     return {
         token: (0, core_1.getInput)(const_1.INPUTS.TOKEN),
+        testScript: (0, core_1.getInput)(const_1.INPUTS.TEST_SCRIPT),
     };
 };
 exports.getActionInputs = getActionInputs;
@@ -11675,10 +11680,13 @@ const summaryFile = 'coverage/coverage-summary.json';
 const reportFile = 'report.json';
 const main = async () => {
     const cwd = process.cwd();
-    const filesToTest = await getChangedFiles();
+    const inputs = (0, helpers_1.getActionInputs)();
+    if (!inputs.token)
+        return;
+    const filesToTest = await getChangedFiles(inputs.token);
     if (!(filesToTest === null || filesToTest === void 0 ? void 0 : filesToTest.length))
         return;
-    await (0, runTests_1.runTest)(filesToTest);
+    await (0, runTests_1.runTest)(inputs.testScript, filesToTest);
     if (!(0, fs_1.existsSync)(summaryFile) || !(0, fs_1.existsSync)(reportFile)) {
         reportNoResult();
         return;
@@ -11703,12 +11711,11 @@ const reportNoResult = async () => {
     };
     await (0, comment_1.commentReport)(report);
 };
-const getChangedFiles = async () => {
-    const inputs = (0, helpers_1.getActionInputs)();
+const getChangedFiles = async (token) => {
     const { payload, repo } = github_1.context;
-    if (!inputs.token || !payload.pull_request)
+    if (!payload.pull_request)
         return;
-    const octokit = (0, github_1.getOctokit)(inputs.token);
+    const octokit = (0, github_1.getOctokit)(token);
     const { data } = await octokit.rest.repos.compareCommits({
         owner: repo.owner,
         repo: repo.repo,
