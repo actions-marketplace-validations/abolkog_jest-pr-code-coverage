@@ -7,7 +7,7 @@ const listComments = jest.fn();
 const updateComment = jest.fn();
 const createComment = jest.fn();
 
-jest.spyOn(helpers, 'getActionInputs').mockReturnValue({ token: 'token' });
+jest.spyOn(helpers, 'getActionInputs').mockReturnValue({ token: 'token', testScript: 'npx jest' });
 
 jest.mock('@actions/github', () => ({
   context: {

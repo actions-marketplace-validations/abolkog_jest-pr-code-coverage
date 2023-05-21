@@ -4,6 +4,7 @@ import { ANSI_REGX, INPUTS } from './const';
 export const getActionInputs = (): ActionInputs => {
   return {
     token: getInput(INPUTS.TOKEN),
+    testScript: getInput(INPUTS.TEST_SCRIPT),
   };
 };
 

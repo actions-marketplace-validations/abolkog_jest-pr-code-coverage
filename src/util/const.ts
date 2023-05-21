@@ -1,5 +1,6 @@
 export const INPUTS = {
   TOKEN: 'github-token',
+  TEST_SCRIPT: 'test-script',
 };
 
 export const commentVariable = {

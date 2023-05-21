@@ -1,5 +1,6 @@
 interface ActionInputs {
   token: string;
+  testScript: string;
 }
 
 interface CoverageValues {
