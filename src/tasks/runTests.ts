@@ -1,10 +1,15 @@
+import { info } from '@actions/core';
 import { exec } from '@actions/exec';
 
-export const runTest = async (files: string[]) => {
+export const runTest = async (testScrip: string, files: string[]) => {
   const filesStrings = files.join(' ');
+
+  const testCMD = testScrip || 'npx jest';
+  const extraDash = testCMD === 'npx jest' ? '' : '--';
+
   const testCommand = [
-    'npx',
-    'jest',
+    testCMD,
+    extraDash,
     `--findRelatedTests ${filesStrings}`,
     '--ci',
     '--json',
@@ -13,7 +18,7 @@ export const runTest = async (files: string[]) => {
     '--outputFile="report.json"',
   ].join(' ');
 
-  console.log(`Running test: ${testCommand}`);
+  info(`Running test: ${testCommand}`);
 
   await exec(testCommand, [], { cwd: process.cwd(), failOnStdErr: false, ignoreReturnCode: true });
 };

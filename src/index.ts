@@ -15,10 +15,13 @@ const reportFile = 'report.json';
 
 const main = async () => {
   const cwd = process.cwd();
-  const filesToTest = await getChangedFiles();
+  const inputs = getActionInputs();
+  if (!inputs.token) return;
+
+  const filesToTest = await getChangedFiles(inputs.token);
   if (!filesToTest?.length) return;
 
-  await runTest(filesToTest);
+  await runTest(inputs.testScript, filesToTest);
 
   if (!existsSync(summaryFile) || !existsSync(reportFile)) {
     reportNoResult();
@@ -51,12 +54,11 @@ const reportNoResult = async () => {
   await commentReport(report);
 };
 
-const getChangedFiles = async () => {
-  const inputs = getActionInputs();
+const getChangedFiles = async (token: string) => {
   const { payload, repo } = context;
-  if (!inputs.token || !payload.pull_request) return;
+  if (!payload.pull_request) return;
 
-  const octokit = getOctokit(inputs.token);
+  const octokit = getOctokit(token);
   const { data } = await octokit.rest.repos.compareCommits({
     owner: repo.owner,
     repo: repo.repo,
