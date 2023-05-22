@@ -7,7 +7,12 @@ import { capitaliseFirstLetter, cleanFileName } from '../util/helpers';
  * @param cwd current working directory. Used to format file name
  * @returns report
  */
-export const generateReport = (report: CoverageReport, result: JestResult, cwd: string): Report => {
+export const generateReport = (
+  report: CoverageReport,
+  result: JestResult,
+  cwd: string,
+  minThreshold?: number,
+): Report => {
   const { total } = report;
   delete total.branchesTrue;
 
@@ -15,13 +20,20 @@ export const generateReport = (report: CoverageReport, result: JestResult, cwd: 
   const summary = genSummary(report);
   const details = genDetails(report, cwd);
 
+  let success = result.success;
+  let reasonMessage = '';
+  if (minThreshold && minThreshold > totalCoverage) {
+    success = false;
+    reasonMessage = `Total coverage is less than the specified threshol of ${minThreshold}%`;
+  }
   return {
     failedTests: result.numFailedTests,
     totalTests: result.numTotalTests,
-    success: result.success,
+    success,
     total: totalCoverage,
     summary,
     details,
+    reasonMessage,
   };
 };
 

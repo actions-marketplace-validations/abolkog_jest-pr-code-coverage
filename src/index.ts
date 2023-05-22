@@ -1,5 +1,5 @@
 import { context, getOctokit } from '@actions/github';
-import { setFailed } from '@actions/core';
+import { setFailed, info } from '@actions/core';
 import { existsSync, readFileSync } from 'fs';
 
 import { runTest } from './tasks/runTests';
@@ -24,6 +24,7 @@ const main = async () => {
   await runTest(inputs.testScript, filesToTest);
 
   if (!existsSync(summaryFile) || !existsSync(reportFile)) {
+    info('No test result found');
     reportNoResult();
     return;
   }
@@ -32,13 +33,13 @@ const main = async () => {
 
   const data = JSON.parse(readFileSync(summaryFile).toString());
 
-  const report = generateReport(data, result, cwd);
+  const report = generateReport(data, result, cwd, inputs.minThreshold);
   report.errors = checkErrors(result, cwd);
 
   await commentReport(report);
 
   if (!report.success) {
-    setFailed('Error in some of the tests');
+    setFailed(report.reasonMessage || 'Error in some of the tests');
   }
 };
 
