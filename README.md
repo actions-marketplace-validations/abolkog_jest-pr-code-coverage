@@ -22,6 +22,15 @@ with:
     test-script: npm test
 ```
 
+### `min-threshold`
+
+This option can be used to specifiy a minimum coverage thresholod percentage. If the total coverage percentage is below this threshold the action will fail the workflow. By default this value is not used
+
+```
+with:
+    min-threshold: 50
+```
+
 ## Usage
 
 - You will need to have [jest](jest) as a dependecy in your project

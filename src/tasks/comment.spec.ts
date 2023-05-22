@@ -2,6 +2,7 @@ import { mockResult, mockSummary } from './mock';
 import { generateReport } from './repotGenerator';
 import * as helpers from '../util/helpers';
 import { commentReport } from './comment';
+import { commentTag } from '../util/const';
 
 const listComments = jest.fn();
 const updateComment = jest.fn();
@@ -57,7 +58,7 @@ describe('comment task', () => {
           },
           {
             id: 2,
-            body: 'pr coverage <!-- @abolkog/pr-code-coverage-action -->',
+            body: `pr coverage ${commentTag}`,
           },
         ],
       }),

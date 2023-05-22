@@ -14,6 +14,9 @@ inputs:
     description: 'Script used to run the tests'
     required: false
     default: npx jest
+  min-threshold:
+    description: Specify a minimum coverage threshold percentage.
+    required: false
 
 runs:
   using: node16

@@ -2,7 +2,7 @@ name: Update major tag
 
 on:
   release:
-    types: [released]
+    types: [published]
   workflow_dispatch:
     inputs:
       TAG_NAME:
