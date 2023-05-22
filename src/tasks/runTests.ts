@@ -11,6 +11,7 @@ export const runTest = async (testScrip: string, files: string[]) => {
     testCMD,
     extraDash,
     `--findRelatedTests ${filesStrings}`,
+    `--collectCoverageFrom ${filesStrings}`,
     '--ci',
     '--json',
     '--coverage',
