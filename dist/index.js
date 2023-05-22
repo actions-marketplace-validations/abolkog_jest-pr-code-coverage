@@ -8,7 +8,6 @@ require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.commentReport = void 0;
-const fs_1 = __nccwpck_require__(7147);
 const github_1 = __nccwpck_require__(5438);
 const const_1 = __nccwpck_require__(7422);
 const helpers_1 = __nccwpck_require__(3718);
@@ -25,7 +24,7 @@ const commentReport = async (report) => {
         repo: repo,
         owner: owner,
     });
-    const existingComment = comments.data.find(c => { var _a; return (_a = c.body) === null || _a === void 0 ? void 0 : _a.includes('<!-- @abolkog/pr-code-coverage-action -->'); });
+    const existingComment = comments.data.find(c => { var _a; return (_a = c.body) === null || _a === void 0 ? void 0 : _a.includes(const_1.commentTag); });
     if (existingComment) {
         await octokit.rest.issues.updateComment({
             comment_id: existingComment.id,
@@ -45,10 +44,11 @@ const commentReport = async (report) => {
 };
 exports.commentReport = commentReport;
 const getComment = (report) => {
-    const template = (0, fs_1.readFileSync)('src/templates/comment.md').toString();
+    const template = const_1.COMMENTS_TEMPLATE.base;
     return template
         .replace(const_1.commentVariable.title, 'PR Coverage Report')
         .replace(const_1.commentVariable.total, `${formatTotal(report.total)}`)
+        .replace(const_1.commentVariable.threshold, `${formatThreshold(report)}`)
         .replace(const_1.commentVariable.summary, report.summary)
         .replace(const_1.commentVariable.coverage, formatCoverage(report))
         .replace(const_1.commentVariable.failed, formatErrors(report));
@@ -57,14 +57,14 @@ const wrapCode = (code) => '```\n' + code + '\n```';
 const formatCoverage = (report) => {
     if (!report.details)
         return '';
-    const template = (0, fs_1.readFileSync)('src/templates/_coverage.md').toString();
+    const template = const_1.COMMENTS_TEMPLATE.coverage;
     return template.replace(const_1.commentVariable.details, report.details);
 };
 const formatErrors = (report) => {
     const { errors = [] } = report;
     if (!errors || errors.length === 0)
         return '';
-    const template = (0, fs_1.readFileSync)('src/templates/_errors.md').toString();
+    const template = const_1.COMMENTS_TEMPLATE.error;
     const erroMessages = errors.reduce((prev, cur) => `${prev}\n\n### ${cur.fileName}\n${wrapCode(cur.test)}\n${wrapCode(cur.message)}`, '');
     return template
         .replace(const_1.commentVariable.total, `${report.failedTests}/${report.totalTests}`)
@@ -73,6 +73,11 @@ const formatErrors = (report) => {
 const formatTotal = (total) => {
     const icon = coverageToIcon(total);
     return `${total.toFixed(2)}% ${icon}`;
+};
+const formatThreshold = (report) => {
+    if (!report.reasonMessage)
+        return '';
+    return `:x: ${report.reasonMessage}`;
 };
 const coverageToIcon = (total) => {
     if (total > 80)
@@ -138,19 +143,26 @@ const helpers_1 = __nccwpck_require__(3718);
  * @param cwd current working directory. Used to format file name
  * @returns report
  */
-const generateReport = (report, result, cwd) => {
+const generateReport = (report, result, cwd, minThreshold) => {
     const { total } = report;
     delete total.branchesTrue;
     const totalCoverage = getOverallPercentage(report);
     const summary = genSummary(report);
     const details = genDetails(report, cwd);
+    let success = result.success;
+    let reasonMessage = '';
+    if (minThreshold && minThreshold > totalCoverage) {
+        success = false;
+        reasonMessage = `Total coverage is less than the specified threshol of ${minThreshold}%`;
+    }
     return {
         failedTests: result.numFailedTests,
         totalTests: result.numTotalTests,
-        success: result.success,
+        success,
         total: totalCoverage,
         summary,
         details,
+        reasonMessage,
     };
 };
 exports.generateReport = generateReport;
@@ -240,10 +252,11 @@ exports.runTest = runTest;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.ANSI_REGX = exports.FILE_EXTENSIONS = exports.commentVariable = exports.INPUTS = void 0;
+exports.COMMENTS_TEMPLATE = exports.ANSI_REGX = exports.FILE_EXTENSIONS = exports.commentTag = exports.commentVariable = exports.INPUTS = void 0;
 exports.INPUTS = {
     TOKEN: 'github-token',
     TEST_SCRIPT: 'test-script',
+    MIN_THRESHOLD: 'min-threshold',
 };
 exports.commentVariable = {
     title: '{{title}}',
@@ -252,9 +265,51 @@ exports.commentVariable = {
     summary: '{{summary}}',
     details: '{{details}}',
     failed: '{{failed}}',
+    threshold: '{{threshold}}',
 };
+exports.commentTag = '<!-- @abolkog/jest-pr-code-coverage-action -->';
 exports.FILE_EXTENSIONS = ['js', 'ts', 'jsx', 'tsx'];
 exports.ANSI_REGX = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
+exports.COMMENTS_TEMPLATE = {
+    base: `
+## {{title}} :open_umbrella:
+
+### Total Coverage in this PR: {{total}}
+
+{{threshold}}
+
+{{summary}}
+
+{{coverage}}
+
+{{failed}}
+
+<p align="right">Generated by <a href="https://github.com/abolkog/jest-pr-code-coverage">Jest PR Code Coverage action</a>
+
+${exports.commentTag}
+  `,
+    coverage: `
+<hr />
+
+<details>
+<summary>Coverage report</summary>
+
+{{details}}
+
+</details>
+  `,
+    error: `
+### Failed Tests: {{total}}
+
+<hr />
+
+<details>
+
+{{details}}
+
+</details>
+  `,
+};
 
 
 /***/ }),
@@ -272,6 +327,7 @@ const getActionInputs = () => {
     return {
         token: (0, core_1.getInput)(const_1.INPUTS.TOKEN),
         testScript: (0, core_1.getInput)(const_1.INPUTS.TEST_SCRIPT),
+        minThreshold: parseInt((0, core_1.getInput)(const_1.INPUTS.MIN_THRESHOLD)) || 0,
     };
 };
 exports.getActionInputs = getActionInputs;
@@ -11688,16 +11744,17 @@ const main = async () => {
         return;
     await (0, runTests_1.runTest)(inputs.testScript, filesToTest);
     if (!(0, fs_1.existsSync)(summaryFile) || !(0, fs_1.existsSync)(reportFile)) {
+        (0, core_1.info)('No test result found');
         reportNoResult();
         return;
     }
     const result = JSON.parse((0, fs_1.readFileSync)(reportFile).toString());
     const data = JSON.parse((0, fs_1.readFileSync)(summaryFile).toString());
-    const report = (0, repotGenerator_1.generateReport)(data, result, cwd);
+    const report = (0, repotGenerator_1.generateReport)(data, result, cwd, inputs.minThreshold);
     report.errors = (0, errorCollector_1.checkErrors)(result, cwd);
     await (0, comment_1.commentReport)(report);
     if (!report.success) {
-        (0, core_1.setFailed)('Error in some of the tests');
+        (0, core_1.setFailed)(report.reasonMessage || 'Error in some of the tests');
     }
 };
 const reportNoResult = async () => {
