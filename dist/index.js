@@ -232,6 +232,7 @@ const runTest = async (testScrip, files) => {
         testCMD,
         extraDash,
         `--findRelatedTests ${filesStrings}`,
+        `--collectCoverageFrom ${filesStrings}`,
         '--ci',
         '--json',
         '--coverage',
