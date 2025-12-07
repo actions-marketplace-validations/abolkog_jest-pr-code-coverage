@@ -10,7 +10,7 @@ describe('Report Generator', () => {
   });
 
   it('calculate total coverage percentage', () => {
-    expect(report.total).toEqual('16.08');
+    expect(report.total).toEqual(16.0775);
   });
 
   it('generate summary table', () => {
@@ -31,5 +31,19 @@ describe('Report Generator', () => {
 | src/index.ts        | 0%     | 0%         | 0%       | 0%        |
 | src/util/helpers.ts | 83.33% | 87.5%      | 100%     | 50%       |"
 `);
+  });
+
+  describe('given a min threshold specified', () => {
+    const minThreshold = 45;
+    beforeAll(() => {
+      report = generateReport(mockSummary, mockResult, cwd, minThreshold);
+    });
+    it('set success to false', () => {
+      expect(report.success).toEqual(false);
+    });
+
+    it('set reason message', () => {
+      expect(report.reasonMessage).toEqual(`Total coverage is less than the specified threshol of ${minThreshold}%`);
+    });
   });
 });

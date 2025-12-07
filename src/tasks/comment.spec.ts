@@ -2,12 +2,13 @@ import { mockResult, mockSummary } from './mock';
 import { generateReport } from './repotGenerator';
 import * as helpers from '../util/helpers';
 import { commentReport } from './comment';
+import { commentTag } from '../util/const';
 
 const listComments = jest.fn();
 const updateComment = jest.fn();
 const createComment = jest.fn();
 
-jest.spyOn(helpers, 'getActionInputs').mockReturnValue({ token: 'token' });
+jest.spyOn(helpers, 'getActionInputs').mockReturnValue({ token: 'token', testScript: 'npx jest' });
 
 jest.mock('@actions/github', () => ({
   context: {
@@ -57,7 +58,7 @@ describe('comment task', () => {
           },
           {
             id: 2,
-            body: 'pr coverage <!-- @abolkog/pr-code-coverage-action -->',
+            body: `pr coverage ${commentTag}`,
           },
         ],
       }),

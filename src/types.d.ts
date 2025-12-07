@@ -1,5 +1,7 @@
 interface ActionInputs {
   token: string;
+  testScript: string;
+  minThreshold?: number;
 }
 
 interface CoverageValues {
@@ -28,12 +30,13 @@ interface ReportError {
 }
 
 interface Report {
-  total: string;
+  total: number;
   summary: string;
   details: string;
   totalTests: number;
   failedTests: number;
   success: boolean;
+  reasonMessage?: string;
   errors?: ReportError[];
 }
 

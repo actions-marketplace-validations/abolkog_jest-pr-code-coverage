@@ -1,7 +1,6 @@
-import { readFileSync } from 'fs';
 import { context, getOctokit } from '@actions/github';
 
-import { commentVariable } from '../util/const';
+import { commentVariable, COMMENTS_TEMPLATE, commentTag } from '../util/const';
 import { getActionInputs } from '../util/helpers';
 
 export const commentReport = async (report: Report) => {
@@ -22,7 +21,7 @@ export const commentReport = async (report: Report) => {
     owner: owner,
   });
 
-  const existingComment = comments.data.find(c => c.body?.includes('<!-- @abolkog/pr-code-coverage-action -->'));
+  const existingComment = comments.data.find(c => c.body?.includes(commentTag));
 
   if (existingComment) {
     await octokit.rest.issues.updateComment({
@@ -42,21 +41,28 @@ export const commentReport = async (report: Report) => {
 };
 
 const getComment = (report: Report) => {
-  const template = readFileSync('src/comment_template.md').toString();
+  const template = COMMENTS_TEMPLATE.base;
   return template
     .replace(commentVariable.title, 'PR Coverage Report')
-    .replace(commentVariable.total, `${report.total}%`)
+    .replace(commentVariable.total, `${formatTotal(report.total)}`)
+    .replace(commentVariable.threshold, `${formatThreshold(report)}`)
     .replace(commentVariable.summary, report.summary)
-    .replace(commentVariable.details, report.details)
+    .replace(commentVariable.coverage, formatCoverage(report))
     .replace(commentVariable.failed, formatErrors(report));
 };
 
 const wrapCode = (code: string) => '```\n' + code + '\n```';
 
+const formatCoverage = (report: Report) => {
+  if (!report.details) return '';
+  const template = COMMENTS_TEMPLATE.coverage;
+  return template.replace(commentVariable.details, report.details);
+};
+
 const formatErrors = (report: Report) => {
   const { errors = [] } = report;
   if (!errors || errors.length === 0) return '';
-  const template = readFileSync('src/errors.md').toString();
+  const template = COMMENTS_TEMPLATE.error;
 
   const erroMessages = errors.reduce(
     (prev, cur) => `${prev}\n\n### ${cur.fileName}\n${wrapCode(cur.test)}\n${wrapCode(cur.message)}`,
@@ -66,4 +72,21 @@ const formatErrors = (report: Report) => {
   return template
     .replace(commentVariable.total, `${report.failedTests}/${report.totalTests}`)
     .replace(commentVariable.details, erroMessages);
+};
+
+const formatTotal = (total: number) => {
+  const icon = coverageToIcon(total);
+  return `${total.toFixed(2)}% ${icon}`;
+};
+
+const formatThreshold = (report: Report) => {
+  if (!report.reasonMessage) return '';
+
+  return `:x: ${report.reasonMessage}`;
+};
+
+const coverageToIcon = (total: number) => {
+  if (total > 80) return ':green_circle:';
+  if (total > 50) return ':orange_circle:';
+  return ':red_circle:';
 };

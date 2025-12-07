@@ -1,5 +1,5 @@
 import { context, getOctokit } from '@actions/github';
-import { error, setFailed } from '@actions/core';
+import { setFailed, info } from '@actions/core';
 import { existsSync, readFileSync } from 'fs';
 
 import { runTest } from './tasks/runTests';
@@ -13,40 +13,53 @@ import { checkErrors } from './tasks/errorCollector';
 const summaryFile = 'coverage/coverage-summary.json';
 const reportFile = 'report.json';
 
-async function main() {
+const main = async () => {
   const cwd = process.cwd();
-  const filesToTest = await getChangedFiles();
+  const inputs = getActionInputs();
+  if (!inputs.token) return;
+
+  const filesToTest = await getChangedFiles(inputs.token);
   if (!filesToTest?.length) return;
 
-  await runTest(filesToTest);
+  await runTest(inputs.testScript, filesToTest);
 
-  if (!existsSync(summaryFile)) {
-    error(`Unable to find summary file ${summaryFile}`);
-  }
-  if (!existsSync(reportFile)) {
-    error(`Unable to find report file ${reportFile}`);
+  if (!existsSync(summaryFile) || !existsSync(reportFile)) {
+    info('No test result found');
+    reportNoResult();
+    return;
   }
 
   const result = JSON.parse(readFileSync(reportFile).toString());
 
   const data = JSON.parse(readFileSync(summaryFile).toString());
 
-  const report = generateReport(data, result, cwd);
+  const report = generateReport(data, result, cwd, inputs.minThreshold);
   report.errors = checkErrors(result, cwd);
 
   await commentReport(report);
 
   if (!report.success) {
-    setFailed('Error in some of the tests');
+    setFailed(report.reasonMessage || 'Error in some of the tests');
   }
-}
+};
 
-async function getChangedFiles() {
-  const inputs = getActionInputs();
+const reportNoResult = async () => {
+  const report: Report = {
+    success: true,
+    total: 0,
+    totalTests: 0,
+    failedTests: 0,
+    summary: 'No tests found!',
+    details: '',
+  };
+  await commentReport(report);
+};
+
+const getChangedFiles = async (token: string) => {
   const { payload, repo } = context;
-  if (!inputs.token || !payload.pull_request) return;
+  if (!payload.pull_request) return;
 
-  const octokit = getOctokit(inputs.token);
+  const octokit = getOctokit(token);
   const { data } = await octokit.rest.repos.compareCommits({
     owner: repo.owner,
     repo: repo.repo,
@@ -57,6 +70,6 @@ async function getChangedFiles() {
 
   const { files } = data;
   return files?.map(file => file.filename).filter(file => FILE_EXTENSIONS.includes(file.split('.')?.pop() || ''));
-}
+};
 
 main();
